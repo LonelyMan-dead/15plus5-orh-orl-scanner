@@ -1,0 +1,71 @@
+# ═══════════════════════════════════════════════════════════════════════════
+#  UNIFIED 15+5 SCANNER — Market Candidates
+#  One file. Both long AND short. Single IBKR connection.
+# ═══════════════════════════════════════════════════════════════════════════
+#
+#  TICKER FORMAT:
+#    L:TICKER   →  LONG only  (from IBKR Top % Gainers filter)
+#    S:TICKER   →  SHORT only (from IBKR Top % Losers filter)
+#    TICKER     →  BOTH directions evaluated (scanner picks best)
+#
+#  HOW TO POPULATE EACH MORNING:
+#  ─────────────────────────────────────────────────────────────────────────
+#  SHORTS  (Top % Losers Since Open filter settings):
+#    Instrument   : US Stocks (NYSE, AMEX, ARCA, NMS, BATS)
+#    Price        : $10–$50
+#    Avg Volume   : > $2M
+#    Change/Open  : -8% to -2%
+#    Not Halted   : Yes
+#    Gap %        : > -2%
+#    10min Vol/Avg: 1.5 to 6×
+#    Float Shares : 30M to 2B
+#    Volume       : > 1M
+#  → Take top 8-10 names. Prefix each with S: below.
+#
+#  LONGS  (Top % Gainers Since Open filter settings):
+#    Instrument   : US Stocks (NYSE, AMEX, ARCA, NMS, BATS)
+#    Price        : $10–$50
+#    Avg Volume   : > $2M
+#    Change/Open  : +2% to +8%
+#    Not Halted   : Yes
+#    Gap %        : > +2%
+#    10min Vol/Avg: 2.0 to 8×
+#    Float Shares : 30M to 2B
+#    Volume       : > 1M
+#  → Take top 8-10 names. Prefix each with L: below.
+#
+#  TOTAL: keep combined list to ≤ 20 tickers for reliable 60s scan cycles.
+#  Scanner re-reads this file every cycle — no restart needed.
+#  Lines starting with # are ignored. Blank lines are ignored.
+# ═══════════════════════════════════════════════════════════════════════════
+
+# ── SHORT candidates (paste from IBKR Top % Losers) ──────────────────────
+# S:TICKER1
+# S:TICKER2
+
+# ── LONG candidates (paste from IBKR Top % Gainers) ──────────────────────
+# L:TICKER3
+# L:TICKER4
+
+# ── Example (remove these before live use) ───────────────────────────────
+
+S:LEG
+S:AHCO
+S:SAN
+S:NU
+S:CLBT
+S:BKD
+S:SOFI
+S:NCLH
+S:AEO
+S:HIMS
+L:RDW
+L:ZETA
+L:ELAN
+L:ZTO
+L:CORZ
+L:ZIM
+L:USAR
+L:NVTS
+L:BITI
+L:PBR

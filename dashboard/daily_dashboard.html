@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>15+5 Scanner Dashboard — 2026-05-22</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0d1117; --bg2: #161b22; --bg3: #21262d;
+    --border: #30363d; --text: #e6edf3; --text2: #8b949e;
+    --green: #3fb950; --red: #f85149; --yellow: #d29922;
+    --blue: #58a6ff; --purple: #bc8cff; --orange: #ffa657;
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; font-size: 14px; }
+  .header { background: linear-gradient(135deg, #1a3a2a 0%, #0d1117 60%); padding: 24px 32px; border-bottom: 1px solid var(--border); }
+  .header h1 { font-size: 22px; font-weight: 700; color: var(--green); }
+  .header .sub { color: var(--text2); font-size: 13px; margin-top: 4px; }
+  .badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; margin-left: 8px; }
+  .badge-long  { background: #0d3324; color: var(--green); border: 1px solid var(--green); }
+  .badge-short { background: #3d0f0f; color: var(--red);   border: 1px solid var(--red);   }
+  .badge-aplus { background: #1a3a2a; color: var(--green); }
+  .badge-a     { background: #1a2f1a; color: #80e080; }
+  .badge-b     { background: #2d2400; color: var(--yellow); }
+  .badge-skip  { background: #1a1a1a; color: var(--text2); }
+  .layout { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; padding: 24px 32px; }
+  .layout-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 0 32px 24px; }
+  .layout-3col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; padding: 0 32px 24px; }
+  .layout-full { padding: 0 32px 24px; }
+  .card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+  .card h3 { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text2); margin-bottom: 12px; }
+  .stat-big { font-size: 36px; font-weight: 700; line-height: 1; }
+  .stat-sub { font-size: 12px; color: var(--text2); margin-top: 6px; }
+  .green { color: var(--green); }
+  .red   { color: var(--red);   }
+  .yellow{ color: var(--yellow);}
+  .blue  { color: var(--blue);  }
+  .section-title { font-size: 16px; font-weight: 600; padding: 0 32px 12px; color: var(--text); border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; padding: 8px 12px; color: var(--text2); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--bg3); }
+  .state-triggered { color: var(--green); font-weight: 700; }
+  .state-ready     { color: #80e080; }
+  .state-watchlist { color: var(--yellow); }
+  .state-avoid     { color: var(--text2); }
+  .result-win   { color: var(--green); font-weight: 700; }
+  .result-loss  { color: var(--red);   font-weight: 700; }
+  .result-scratch { color: var(--yellow); }
+  .result-missed  { color: var(--text2); }
+  .chart-wrap { position: relative; height: 220px; }
+  .perf-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .perf-row:last-child { border-bottom: none; }
+  .perf-date { font-size: 12px; color: var(--text2); width: 90px; }
+  .perf-bar { flex: 1; background: var(--bg3); border-radius: 4px; height: 8px; overflow: hidden; }
+  .perf-fill { height: 100%; border-radius: 4px; }
+  .perf-val  { font-size: 13px; font-weight: 600; width: 60px; text-align: right; }
+  .empty { color: var(--text2); text-align: center; padding: 32px; font-size: 13px; }
+  .tip { background: var(--bg3); border: 1px solid var(--border); border-left: 3px solid var(--blue); border-radius: var(--radius); padding: 14px 18px; margin: 0 32px 24px; font-size: 13px; color: var(--text2); }
+  .tip strong { color: var(--text); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>📊 15+5 Unified Scanner Dashboard</h1>
+  <div class="sub">Generated: 2026-05-22 21:49 ET &nbsp;|&nbsp; Date: 2026-05-22 &nbsp;|&nbsp;
+    <span class="badge badge-long">🟢 LONG</span>
+    <span class="badge badge-short">🔴 SHORT</span>
+  </div>
+</div>
+
+<!-- KPI Row -->
+<div class="layout">
+  <div class="card">
+    <h3>Scan Cycles Today</h3>
+    <div class="stat-big blue">2</div>
+    <div class="stat-sub">19 symbol evaluations</div>
+  </div>
+  <div class="card">
+    <h3>Triggered Today</h3>
+    <div class="stat-big green">0</div>
+    <div class="stat-sub">🟢 0 Long &nbsp;|&nbsp; 🔴 0 Short</div>
+  </div>
+  <div class="card">
+    <h3>Ready Today</h3>
+    <div class="stat-big yellow">0</div>
+    <div class="stat-sub">Awaiting final trigger candle</div>
+  </div>
+  <div class="card">
+    <h3>Trades Taken</h3>
+    <div class="stat-big yellow">0</div>
+    <div class="stat-sub">Win rate: 0% &nbsp;|&nbsp; Net: —</div>
+  </div>
+</div>
+
+<!-- Performance Row -->
+<div class="layout">
+  <div class="card">
+    <h3>Today P&amp;L (R)</h3>
+    <div class="stat-big yellow">—</div>
+    <div class="stat-sub">0W / 0L / 0R</div>
+  </div>
+  <div class="card">
+    <h3>Today Win Rate</h3>
+    <div class="stat-big red">0%</div>
+    <div class="stat-sub">0 trades logged</div>
+  </div>
+  <div class="card">
+    <h3>All-Time Win Rate</h3>
+    <div class="stat-big blue">0%</div>
+    <div class="stat-sub">0 total trades</div>
+  </div>
+  <div class="card">
+    <h3>All-Time Net R</h3>
+    <div class="stat-big red">—</div>
+    <div class="stat-sub">Cumulative across all sessions</div>
+  </div>
+</div>
+
+<!-- Charts -->
+<div class="layout-2col">
+  <div class="card">
+    <h3>Daily Net R (last 30 sessions)</h3>
+    <div class="chart-wrap"><canvas id="netRChart"></canvas></div>
+  </div>
+  <div class="card">
+    <h3>Triggered + Ready Setups per Day (last 10)</h3>
+    <div class="chart-wrap"><canvas id="setupChart"></canvas></div>
+  </div>
+</div>
+
+<!-- Today's setups table -->
+<div class="layout-full">
+  <div class="section-title">🎯 Today's Setups — Best Per Symbol</div>
+  <div class="card">
+    <table>
+      <thead><tr>
+        <th>Symbol</th><th>Dir</th><th>Grade</th><th>State</th>
+        <th>Score</th><th>Type</th><th>Entry</th><th>Stop</th>
+        <th>T1</th><th>RR</th><th>Note</th>
+      </tr></thead>
+      <tbody><tr>
+          <td><strong>🔴 AHCO</strong></td>
+          <td>SHORT</td>
+          <td><span class="badge badge-skip">Skip</span></td>
+          <td class="state-avoid">AVOID</td>
+          <td>0</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td style="color:var(--blue)">—</td>
+          <td style="color:var(--text2);font-size:11px">SHORT — structural fail</td>
+        </tr><tr>
+          <td><strong>🔴 SAN</strong></td>
+          <td>SHORT</td>
+          <td><span class="badge badge-skip">Skip</span></td>
+          <td class="state-avoid">AVOID</td>
+          <td>0</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td style="color:var(--blue)">—</td>
+          <td style="color:var(--text2);font-size:11px">SHORT — structural fail</td>
+        </tr><tr>
+          <td><strong>🔴 NU</strong></td>
+          <td>SHORT</td>
+          <td><span class="badge badge-skip">Skip</span></td>
+          <td class="state-avoid">AVOID</td>
+          <td>0</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td style="color:var(--blue)">—</td>
+          <td style="color:var(--text2);font-size:11px">SHORT — structural fail</td>
+        </tr><tr>
+          <td><strong>🔴 CLBT</strong></td>
+          <td>SHORT</td>
+          <td><span class="badge badge-skip">Skip</span></td>
+          <td class="state-avoid">AVOID</td>
+          <td>0</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td style="color:var(--blue)">—</td>
+          <td style="color:var(--text2);font-size:11px">SHORT — structural fail</td>
+        </tr><tr>
+          <td><strong>🔴 BKD</strong></td>
+          <td>SHORT</td>
+          <td><span class="badge badge-skip">Skip</span></td>
+          <td class="state-avoid">AVOID</td>
+          <td>0</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td style="color:var(--blue)">—</td>
+          <td style="color:var(--text2);font-size:11px">SHORT — structural fail</td>
+        </tr><tr>
+          <td><strong>🔴 SOFI</strong></td>
+          <td>SHORT</td>
+          <td><span class="badge badge-skip">Skip</span></td>
+          <td class="state-avoid">AVOID</td>
+          <td>0</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td style="color:var(--blue)">—</td>
+          <td style="color:var(--text2);font-size:11px">SHORT — structural fail</td>
+        </tr><tr>
+          <td><strong>🔴 NCLH</strong></td>
+          <td>SHORT</td>
+          <td><span class="badge badge-skip">Skip</span></td>
+          <td class="state-avoid">AVOID</td>
+          <td>0</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td style="color:var(--blue)">—</td>
+          <td style="color:var(--text2);font-size:11px">SHORT — structural fail</td>
+        </tr><tr>
+          <td><strong>🔴 AEO</strong></td>
+          <td>SHORT</td>
+          <td><span class="badge badge-skip">Skip</span></td>
+          <td class="state-avoid">AVOID</td>
+          <td>0</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td style="color:var(--blue)">—</td>
+          <td style="color:var(--text2);font-size:11px">SHORT — structural fail</td>
+        </tr><tr>
+          <td><strong>🔴 HIMS</strong></td>
+          <td>SHORT</td>
+          <td><span class="badge badge-skip">Skip</span></td>
+          <td class="state-avoid">AVOID</td>
+          <td>0</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td style="color:var(--blue)">—</td>
+          <td style="color:var(--text2);font-size:11px">SHORT — structural fail</td>
+        </tr><tr>
+          <td><strong>🟢 RDW</strong></td>
+          <td>LONG</td>
+          <td><span class="badge badge-skip">Skip</span></td>
+          <td class="state-avoid">AVOID</td>
+          <td>0</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td style="color:var(--blue)">—</td>
+          <td style="color:var(--text2);font-size:11px">LONG — structural fail</td>
+        </tr><tr>
+          <td><strong>🟢 ZETA</strong></td>
+          <td>LONG</td>
+          <td><span class="badge badge-skip">Skip</span></td>
+          <td class="state-avoid">AVOID</td>
+          <td>0</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td style="color:var(--blue)">—</td>
+          <td style="color:var(--text2);font-size:11px">LONG — structural fail</td>
+        </tr><tr>
+          <td><strong>🟢 ELAN</strong></td>
+          <td>LONG</td>
+          <td><span class="badge badge-skip">Skip</span></td>
+          <td class="state-avoid">AVOID</td>
+          <td>0</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td style="color:var(--blue)">—</td>
+          <td style="color:var(--text2);font-size:11px">LONG — structural fail</td>
+        </tr><tr>
+          <td><strong>🟢 ZTO</strong></td>
+          <td>LONG</td>
+          <td><span class="badge badge-skip">Skip</span></td>
+          <td class="state-avoid">AVOID</td>
+          <td>0</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td style="color:var(--blue)">—</td>
+          <td style="color:var(--text2);font-size:11px">LONG — structural fail</td>
+        </tr><tr>
+          <td><strong>🟢 CORZ</strong></td>
+          <td>LONG</td>
+          <td><span class="badge badge-skip">Skip</span></td>
+          <td class="state-avoid">AVOID</td>
+          <td>0</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td style="color:var(--blue)">—</td>
+          <td style="color:var(--text2);font-size:11px">LONG — structural fail</td>
+        </tr><tr>
+          <td><strong>🟢 ZIM</strong></td>
+          <td>LONG</td>
+          <td><span class="badge badge-skip">Skip</span></td>
+          <td class="state-avoid">AVOID</td>
+          <td>0</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td style="color:var(--blue)">—</td>
+          <td style="color:var(--text2);font-size:11px">LONG — structural fail</td>
+        </tr><tr>
+          <td><strong>🟢 USAR</strong></td>
+          <td>LONG</td>
+          <td><span class="badge badge-skip">Skip</span></td>
+          <td class="state-avoid">AVOID</td>
+          <td>0</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td style="color:var(--blue)">—</td>
+          <td style="color:var(--text2);font-size:11px">LONG — structural fail</td>
+        </tr><tr>
+          <td><strong>🟢 NVTS</strong></td>
+          <td>LONG</td>
+          <td><span class="badge badge-skip">Skip</span></td>
+          <td class="state-avoid">AVOID</td>
+          <td>0</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td style="color:var(--blue)">—</td>
+          <td style="color:var(--text2);font-size:11px">LONG — structural fail</td>
+        </tr><tr>
+          <td><strong>🟢 BITI</strong></td>
+          <td>LONG</td>
+          <td><span class="badge badge-skip">Skip</span></td>
+          <td class="state-avoid">AVOID</td>
+          <td>0</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td style="color:var(--blue)">—</td>
+          <td style="color:var(--text2);font-size:11px">LONG — structural fail</td>
+        </tr><tr>
+          <td><strong>🟢 PBR</strong></td>
+          <td>LONG</td>
+          <td><span class="badge badge-skip">Skip</span></td>
+          <td class="state-avoid">AVOID</td>
+          <td>0</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td style="color:var(--blue)">—</td>
+          <td style="color:var(--text2);font-size:11px">LONG — structural fail</td>
+        </tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Outcomes table -->
+<div class="layout-full">
+  <div class="section-title">📋 Trade Outcomes — 2026-05-22</div>
+  <div class="card">
+    <div class="empty">No outcomes logged today.<br>Run <code>log_outcome.bat</code> after your session to record trades.</div>
+  </div>
+</div>
+
+<!-- Performance history -->
+<div class="layout-2col">
+  <div class="card">
+    <h3>Performance by Day (last 10)</h3>
+    <div class="empty">No performance data yet.</div>
+  </div>
+  <div class="card">
+    <h3>Win Rate Trend</h3>
+    <div class="chart-wrap"><canvas id="wrChart"></canvas></div>
+  </div>
+</div>
+
+<div class="tip">
+  <strong>💡 How to update this dashboard:</strong>
+  After each session → run <code>log_outcome.bat</code> to enter your trade results →
+  then run <code>generate_dashboard.bat</code> to rebuild this page.
+  Or run <code>post_market.bat</code> which does both automatically.
+</div>
+
+<script>
+const chartDefaults = {
+  responsive: true, maintainAspectRatio: false,
+  plugins: { legend: { labels: { color: '#8b949e', font: { size: 11 } } } },
+  scales: {
+    x: { grid: { color: '#21262d' }, ticks: { color: '#8b949e', font: { size: 10 } } },
+    y: { grid: { color: '#21262d' }, ticks: { color: '#8b949e', font: { size: 10 } } }
+  }
+};
+
+// Net R chart
+new Chart(document.getElementById('netRChart'), {
+  type: 'bar',
+  data: {
+    labels: [],
+    datasets: [{
+      label: 'Net R',
+      data: [],
+      backgroundColor: [].map(v => v >= 0 ? '#1a4a2a' : '#4a1a1a'),
+      borderColor:     [].map(v => v >= 0 ? '#3fb950' : '#f85149'),
+      borderWidth: 1, borderRadius: 3,
+    }]
+  },
+  options: { ...chartDefaults }
+});
+
+// Setup frequency chart
+new Chart(document.getElementById('setupChart'), {
+  type: 'bar',
+  data: {
+    labels: ["2026-05-22"],
+    datasets: [
+      { label: 'Triggered', data: [0], backgroundColor: '#1a4a2a', borderColor: '#3fb950', borderWidth: 1, borderRadius: 2 },
+      { label: 'Ready',     data: [0],     backgroundColor: '#2d2400', borderColor: '#d29922', borderWidth: 1, borderRadius: 2 },
+    ]
+  },
+  options: { ...chartDefaults, scales: { ...chartDefaults.scales, x: { ...chartDefaults.scales.x, stacked: false } } }
+});
+
+// Win rate chart
+new Chart(document.getElementById('wrChart'), {
+  type: 'line',
+  data: {
+    labels: [],
+    datasets: [{
+      label: 'Win Rate %',
+      data: [],
+      borderColor: '#58a6ff', backgroundColor: 'rgba(88,166,255,0.1)',
+      borderWidth: 2, pointRadius: 3, tension: 0.3, fill: true,
+    }]
+  },
+  options: { ...chartDefaults }
+});
+</script>
+</body>
+</html>
